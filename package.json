@@ -1,0 +1,29 @@
+{
+  "name": "queued-stream",
+  "version": "0.0.0",
+  "description": "Queue up multiple readable streams to stream as single output stream",
+  "main": "index.js",
+  "scripts": {
+    "test": "node_modules/mocha/bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/jupiter/node-queued-stream.git"
+  },
+  "keywords": [
+    "queue",
+    "combined",
+    "joined",
+    "stream",
+    "transform"
+  ],
+  "author": "Pieter Raubenheimer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jupiter/node-queued-stream/issues"
+  },
+  "homepage": "https://github.com/jupiter/node-queued-stream",
+  "devDependencies": {
+    "mocha": "^1.20.1"
+  }
+}
