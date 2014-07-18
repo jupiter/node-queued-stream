@@ -10,12 +10,15 @@ module.exports = function createRandomStream(options) {
     highWaterMark: highWaterMark
   });
 
-  randomReader._read = function(size){
+  randomReader._read = function(size) {
     var stream = this;
-
     var outputBytes = Math.min(bytes, size);
 
     if (!outputBytes) {
+      if (options.error) {
+        stream.emit('error', options.error);
+        return;
+      }
       return this.push(null); // End stream
     }
 

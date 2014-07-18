@@ -27,9 +27,10 @@ prototype.append = function(readable, expectedBytes) {
   } else {
     this.queuedStreams.push(arguments);
   }
+  return this;
 };
 
-prototype.complete = function(soon) {
+prototype.destroy = function() {
   this._clearCurrentStream();
   this.push(null);
 };
@@ -48,17 +49,23 @@ prototype._switchStream = function(readable, expectedBytes) {
   var self = this;
 
   if (!readable) {
-    return this.complete();
+    return this.destroy();
   }
 
   self._clearCurrentStream();
   self.currentStream = readable;
   self.currentBytes = 0;
   self.expectedBytes = expectedBytes;
-  self.currentStreamOnceEnd = function(){
+
+  readable.once('end', function(){
+    if (self.currentStream !== this) return;
     self._nextStream();
-  };
-  readable.once('end', self.currentStreamOnceEnd);
+  });
+  readable.once('error', function(err) {
+    if (self.currentStream !== this) return;
+    self.emit('readError', err);
+    process.nextTick(self.destroy.bind(self));
+  });
   readable.pipe(self, { end: false });
 };
 
@@ -75,9 +82,7 @@ prototype._clearCurrentStream = function() {
   if (!this.currentStream) return;
 
   this.currentStream.unpipe(this);
-  this.currentStream.removeAllListeners('end', this.currentStreamOnceEnd);
   this.currentStream = null;
-  this.currentStreamOnceEnd = null;
 };
 
 prototype._transform = function(chunk, encoding, cb) {

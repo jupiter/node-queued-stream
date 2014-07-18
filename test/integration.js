@@ -168,13 +168,37 @@ describe('QueuedStream', function() {
     });
 
     it('should stream everything up to null', function(done) {
-      this.qs.append(createRandomStream({ totalBytes: 1000 }), 1000);
-      this.qs.append(createRandomStream({ totalBytes: 1500 }), 1000);
+      var qs = this.qs;
+      this.qs.append(createRandomStream({ totalBytes: 1000 }), 999);
+      this.qs.append(createRandomStream({ totalBytes: 1500 }), 1001);
       this.qs.append(null);
       this.qs.pipe(createFileStream()).on('finish', function(){
         assert.equal(getFileSizeAndUnlink(), 2000);
         done();
       });
+    });
+  });
+
+  describe('with an error', function() {
+    it('should emit error and stop', function(done) {
+        var qs = this.qs = new QueuedStream();
+
+        var error = new Error('etc');
+        var err;
+
+        this.qs
+        .append(createRandomStream({ totalBytes: 1000 }), 999)
+        .append(createRandomStream({ totalBytes: 1001, error: error }), 1001)
+        // .append(createRandomStream({ totalBytes: 1000 }), 1000)
+        .pipe(createFileStream()).on('finish', function(){
+          assert.equal(error, err);
+          assert.equal(getFileSizeAndUnlink(), 2000);
+          done();
+        });
+
+        this.qs.on('readError', function(error){
+          err = error;
+        });
     });
   });
 });

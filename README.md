@@ -19,8 +19,8 @@ var queuedStream = new QueuedStream({ maxBytes: 20000 });
 
 queuedStream.pipe(fs.createWriteStream('combined.txt'));
 
-// Add input stream when ready
-combinedStream.append(fs.createReadStream('file1.txt'));
+// Add input streams when ready
+combinedStream.append(fs.createReadStream('file1.txt'))
 
 // Add more input streams later
 setTimeout(function(){
@@ -31,8 +31,7 @@ setTimeout(function(){
 To end after all items in the queue had been processed, just append an empty value to the queued stream.
 
 ``` javascript
-queuedStream.append(fs.createReadStream('file3.txt'));
-queuedStream.append(null);
+queuedStream.append(fs.createReadStream('file3.txt')).append(null);
 ```
 
 ## API
@@ -47,6 +46,6 @@ Should read from this stream next. It will switch to the next stream in the queu
 
 If stream is `null`, output will end.
 
-### queuedStream.complete()
+### queuedStream.destroy()
 
 Immediately unpipes from active stream, where active, and ends the output stream.
