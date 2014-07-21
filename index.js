@@ -59,6 +59,7 @@ prototype._switchStream = function(readable, expectedBytes) {
 
   readable.once('end', function(){
     if (self.currentStream !== this) return;
+    self.emit('readEnd', self.currentStream);
     self._nextStream();
   });
   readable.once('error', function(err) {
