@@ -57,10 +57,14 @@ prototype._switchStream = function(readable, expectedBytes) {
   self.currentBytes = 0;
   self.expectedBytes = expectedBytes;
 
-  readable.once('end', function(){
+  readable.on('end', function(){
     if (self.currentStream !== this) return;
-    self.emit('readEnd', self.currentStream);
-    self._nextStream();
+    if (self._transformState.writechunk) {
+      // Allow transforming queued chunk
+      self._shouldNextStream = true;
+    } else {
+      self._nextStream();
+    }
   });
   readable.once('error', function(err) {
     if (self.currentStream !== this) return;
@@ -82,6 +86,7 @@ prototype._nextStream = function() {
 prototype._clearCurrentStream = function() {
   if (!this.currentStream) return;
 
+  this.emit('readEnd', this.currentStream);
   this.currentStream.unpipe(this);
   this.currentStream = null;
 };
@@ -99,10 +104,13 @@ prototype._transform = function(chunk, encoding, cb) {
   self.currentBytes += chunk.length;
 
   if (self.totalBytes === self.maxBytes) {
-    self._clearCurrentStream();
-    self.push(null);
+    self.destroy();
   } else if (self.expectedBytes === self.currentBytes) {
     self._nextStream();
+  } else if (self._shouldNextStream) {
+    self._shouldNextStream = false;
+    // Allow writing to complete before switching
+    process.nextTick(self._nextStream.bind(self));
   }
   cb();
 };
