@@ -196,7 +196,7 @@ describe('QueuedStream', function() {
           done();
         });
 
-        this.qs.on('readError', function(error){
+        this.qs.on('error', function(error){
           err = error;
         });
     });

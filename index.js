@@ -14,6 +14,9 @@ var QueuedStream = function(options) {
   this.queuedStreams = [];
   this.currentStream = null;
 
+  // Bind events
+  this.once('error', this.destroy.bind(this));
+
   stream.Transform.call(this, options);
 };
 
@@ -66,10 +69,9 @@ prototype._switchStream = function(readable, expectedBytes) {
       self._nextStream();
     }
   });
-  readable.once('error', function(err) {
+  readable.on('error', function(err) {
     if (self.currentStream !== this) return;
-    self.emit('readError', err);
-    process.nextTick(self.destroy.bind(self));
+    process.nextTick(self.emit.bind(self, 'error', err));
   });
   readable.pipe(self, { end: false });
 };
@@ -86,7 +88,6 @@ prototype._nextStream = function() {
 prototype._clearCurrentStream = function() {
   if (!this.currentStream) return;
 
-  this.emit('readEnd', this.currentStream);
   this.currentStream.unpipe(this);
   this.currentStream = null;
 };

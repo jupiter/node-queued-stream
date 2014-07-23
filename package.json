@@ -1,6 +1,6 @@
 {
   "name": "queued-stream",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Queue up multiple readable streams to stream as single output stream",
   "main": "index.js",
   "scripts": {
